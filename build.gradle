@@ -31,6 +31,10 @@ String getClassesJar(String platform) {
 def guavaVersion = '17.0'
 def classesJar = files(getClassesJar(System.properties['os.name']))
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
     injar "com.google.guava:guava:${guavaVersion}"
     libjar 'com.google.code.findbugs:jsr305:3.0.0'
