@@ -14,22 +14,28 @@ configurations {
     libjar
 }
 
-String getClassesJar(String platform) {
+String getClassesJar() {
     def javaHome = System.properties.'java.home'
-    switch (platform.replaceAll(' ', '').toLowerCase()) {
-        case ~/.*osx.*/:
-            // java6 only
-            return "$javaHome/../Classes/classes.jar"
-        case ~/.*linux.*/:
-        case ~/.*darwin.*/:
-        case ~/.*win.*/:
-            return "$javaHome/bin/rt.jar"
-        default: throw new GradleException('unable to determine java runtime classes!')
+    def candidates = ["$javaHome/lib/rt.jar", "$javaHome/bin/rt.jar", "$javaHome/../Classes/classes.jar"]
+    def found
+
+    candidates.find {
+        if (new File(it).exists()) {
+            found = it
+            return true
+        }
+        return false;
     }
+
+    if (!found) {
+        throw new GradleException('unable to determine java runtime classes it is none of the expected: ' + candidates)
+    }
+
+    found
 }
 
 def guavaVersion = '17.0'
-def classesJar = files(getClassesJar(System.properties['os.name']))
+def classesJar = files(getClassesJar())
 
 repositories {
     mavenCentral()
@@ -52,5 +58,5 @@ task createCustomGuava(type: proguard.gradle.ProGuardTask) {
 }
 
 artifacts {
-    'default' (file: createCustomGuava.outputs.files.singleFile, builtBy: createCustomGuava)
+    'default'(file: createCustomGuava.outputs.files.singleFile, builtBy: createCustomGuava)
 }
